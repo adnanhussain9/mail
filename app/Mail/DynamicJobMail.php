@@ -7,7 +7,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Attachment;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Queue\SerializesModels;
+use App\Models\MailSetting;
 
 class DynamicJobMail extends Mailable
 {
@@ -17,6 +20,7 @@ class DynamicJobMail extends Mailable
      * Create a new message instance.
      */
     public function __construct(
+        public string $email,
         public string $companyName,
         public string $positionName,
     ) {
@@ -28,8 +32,17 @@ class DynamicJobMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $settings = MailSetting::first();
+        $subject = $settings ? $settings->subject : "Application for {position} at {company}";
+
+        $parsedSubject = str_replace(
+            ['{email}', '{company}', '{position}'],
+            [$this->email, $this->companyName, $this->positionName],
+            $subject
+        );
+
         return new Envelope(
-            subject: "Application for {$this->positionName} at {$this->companyName}",
+            subject: $parsedSubject,
         );
     }
 
@@ -38,8 +51,20 @@ class DynamicJobMail extends Mailable
      */
     public function content(): Content
     {
+        $settings = MailSetting::first();
+        $body = $settings ? $settings->body : "Hello! I am applying for {position} at {company}.";
+
+        $parsedBody = str_replace(
+            ['{email}', '{company}', '{position}'],
+            [$this->email, $this->companyName, $this->positionName],
+            $body
+        );
+
         return new Content(
             view: 'emails.job_application',
+            with: [
+                'customBody' => nl2br($parsedBody),
+            ]
         );
     }
 
@@ -50,6 +75,15 @@ class DynamicJobMail extends Mailable
      */
     public function attachments(): array
     {
+        $settings = MailSetting::first();
+        if ($settings && $settings->attachment_path && Storage::exists($settings->attachment_path)) {
+            return [
+                Attachment::fromPath(storage_path('app/' . $settings->attachment_path))
+                    ->as('Attachment.pdf')
+                    ->withMime('application/pdf'),
+            ];
+        }
+
         return [];
     }
 }

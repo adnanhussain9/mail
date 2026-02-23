@@ -135,6 +135,39 @@
         .btn:hover {
             background: var(--primary-hover);
         }
+
+        /* Basic Pagination Styles */
+        nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+        }
+
+        nav li {
+            margin: 0 4px;
+        }
+
+        nav a,
+        nav span {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            text-decoration: none;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        nav .active span {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
     </style>
 </head>
 
@@ -163,6 +196,51 @@
                 <div class="label">Status</div>
                 <div class="value" style="color: #10b981;">Active</div>
             </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 32px; padding: 24px;">
+            <h2 style="font-size: 18px; margin-bottom: 16px;">Customize Email Content</h2>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">
+                Use placeholders: <code>{email}</code>, <code>{company}</code>, <code>{position}</code>
+            </p>
+
+            <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px;">Email
+                        Subject</label>
+                    <input type="text" name="subject" value="{{ $settings->subject }}"
+                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box;">
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px;">Email Body
+                        (HTML supported)</label>
+                    <textarea name="body" rows="6"
+                        style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-family: inherit;">{{ $settings->body }}</textarea>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px;">Attachment
+                        (PDF only)</label>
+                    <input type="file" name="attachment" accept=".pdf"
+                        style="width: 100%; padding: 8px; border: 1px dashed var(--border); border-radius: 6px; box-sizing: border-box;">
+                    @if($settings->attachment_path)
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">
+                            Current file: <strong>{{ basename($settings->attachment_path) }}</strong>
+                        </p>
+                    @endif
+                </div>
+
+                <button type="submit" class="btn" style="border: none; cursor: pointer;">Save Configuration</button>
+            </form>
+
+            @if(session('success'))
+                <div
+                    style="margin-top: 16px; padding: 10px; background: #ecfdf5; color: #065f46; border-radius: 6px; font-size: 14px;">
+                    {{ session('success') }}
+                </div>
+            @endif
         </div>
 
         <div class="card">

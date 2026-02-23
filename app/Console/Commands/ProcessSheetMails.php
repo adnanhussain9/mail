@@ -3,6 +3,12 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Config;
+use App\Models\MailLog;
+use App\Models\MailSetting;
+use App\Mail\DynamicJobMail;
+use Revolution\Google\Sheets\Facades\Sheets;
 
 class ProcessSheetMails extends Command
 {
@@ -36,7 +42,7 @@ class ProcessSheetMails extends Command
         $this->info("Fetching data from sheet: {$sheetName}...");
 
         try {
-            $rows = \Revolution\Google\Sheets\Facades\Sheets::spreadsheet($spreadsheetId)
+            $rows = Sheets::spreadsheet($spreadsheetId)
                 ->sheet($sheetName)
                 ->get();
 
@@ -47,18 +53,24 @@ class ProcessSheetMails extends Command
 
             // Assume first row is header: Email, Company, Position
             $header = $rows->pull(0);
+            $processedInThisBatch = collect();
 
             foreach ($rows as $row) {
-                $email = $row[0] ?? null;
-                $company = $row[1] ?? null;
-                $position = $row[2] ?? null;
+                $email = isset($row[0]) ? trim($row[0]) : null;
+                $company = isset($row[1]) ? trim($row[1]) : null;
+                $position = isset($row[2]) ? trim($row[2]) : null;
 
                 if (!$email || !$company || !$position) {
                     continue;
                 }
 
-                // Check if already sent
-                $exists = \App\Models\MailLog::where([
+                $entryKey = "{$email}|{$company}|{$position}";
+                if ($processedInThisBatch->contains($entryKey)) {
+                    continue;
+                }
+
+                // Check if already sent (database check)
+                $exists = MailLog::where([
                     'email' => $email,
                     'company_name' => $company,
                     'position_name' => $position,
@@ -68,15 +80,16 @@ class ProcessSheetMails extends Command
                     $this->info("Sending mail to {$email} for {$position} at {$company}...");
 
                     try {
-                        \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\DynamicJobMail($company, $position));
+                        Mail::to($email)->send(new DynamicJobMail($email, $company, $position));
 
-                        \App\Models\MailLog::create([
+                        MailLog::create([
                             'email' => $email,
                             'company_name' => $company,
                             'position_name' => $position,
                             'sent_at' => now(),
                         ]);
 
+                        $processedInThisBatch->push($entryKey);
                         $this->info("Mail sent successfully.");
                     } catch (\Exception $e) {
                         $this->error("Failed to send mail to {$email}: " . $e->getMessage());

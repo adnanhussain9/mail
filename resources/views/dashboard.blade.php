@@ -168,6 +168,50 @@
             color: white;
             border-color: var(--primary);
         }
+
+        /* Responsive Improvements */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px auto;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+                text-align: left;
+            }
+
+            header .btn {
+                width: 100%;
+                text-align: center;
+                box-sizing: border-box;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .card {
+                padding: 16px !important;
+            }
+
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table th,
+            table td {
+                padding: 12px 10px;
+                font-size: 13px;
+                white-space: nowrap;
+            }
+        }
     </style>
 </head>
 
@@ -179,7 +223,7 @@
                 <p style="color: var(--text-muted); margin: 4px 0 0 0;">Tracking processed entries from your sheet.</p>
             </div>
             <div>
-                <a href="#" class="btn" onclick="location.reload()">Refresh Data</a>
+                <a href="#" class="btn" onclick="location.reload()">Refresh Dashboard</a>
             </div>
         </header>
 
@@ -232,7 +276,32 @@
                     @endif
                 </div>
 
-                <button type="submit" class="btn" style="border: none; cursor: pointer;">Save Configuration</button>
+                <div
+                    style="margin-bottom: 32px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <h3 style="font-size: 16px; margin-bottom: 12px; display: flex; align-items: center;">
+                        <span style="margin-right: 8px;">🎯</span> AI Job Hunter (Free)
+                    </h3>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px;">Search
+                            Keywords (e.g. Laravel Developer, Remote PHP)</label>
+                        <input type="text" name="search_keywords" value="{{ $settings->search_keywords }}"
+                            placeholder="Keywords..."
+                            style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 14px;">
+                    </div>
+                    <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
+                        <input type="checkbox" name="is_auto_hunting" {{ $settings->is_auto_hunting ? 'checked' : '' }}
+                            style="margin-right: 8px; width: 16px; height: 16px;">
+                        Enable Automatic Job Hunting (Reddit/RSS)
+                    </label>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                        When enabled, the app will periodically scan niche job boards for matches and send your mail.
+                    </p>
+                </div>
+
+                <button type="submit" class="btn"
+                    style="border: none; cursor: pointer; width: 100%; padding-top: 12px; padding-bottom: 12px;">Save
+                    All
+                    Configuration</button>
             </form>
 
             @if(session('success'))
@@ -251,28 +320,30 @@
                         style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px;">php artisan schedule:work</code>
                 </div>
             @else
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Recipient</th>
-                            <th>Company</th>
-                            <th>Position</th>
-                            <th>Sent At</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($logs as $log)
+                <div class="table-container">
+                    <table>
+                        <thead>
                             <tr>
-                                <td><strong>{{ $log->email }}</strong></td>
-                                <td>{{ $log->company_name }}</td>
-                                <td>{{ $log->position_name }}</td>
-                                <td style="color: var(--text-muted);">{{ $log->sent_at->diffForHumans() }}</td>
-                                <td><span class="status-badge">Sent</span></td>
+                                <th>Recipient</th>
+                                <th>Company</th>
+                                <th>Position</th>
+                                <th>Sent At</th>
+                                <th>Status</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach($logs as $log)
+                                <tr>
+                                    <td><strong>{{ $log->email }}</strong></td>
+                                    <td>{{ $log->company_name }}</td>
+                                    <td>{{ $log->position_name }}</td>
+                                    <td style="color: var(--text-muted);">{{ $log->sent_at->diffForHumans() }}</td>
+                                    <td><span class="status-badge">Sent</span></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
                 <div style="padding: 20px;">
                     {{ $logs->links() }}
                 </div>

@@ -28,7 +28,8 @@ class MailLogController extends Controller
         ]);
 
         $settings = MailSetting::first() ?? new MailSetting();
-        $data = $request->only(['subject', 'body']);
+        $data = $request->only(['subject', 'body', 'search_keywords']);
+        $data['is_auto_hunting'] = $request->has('is_auto_hunting');
 
         if ($request->hasFile('attachment')) {
             // Delete old file if exists

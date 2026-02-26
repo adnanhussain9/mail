@@ -43,7 +43,7 @@ class HuntJobs extends Command
         foreach ($sources as $source) {
             $this->info("Checking source: $source");
             try {
-                if (str_contains($source, 'reddit.json')) {
+                if (str_contains($source, '.json')) {
                     $this->huntReddit($source, $keywords);
                 } else {
                     $this->huntRSS($source, $keywords);
@@ -59,7 +59,7 @@ class HuntJobs extends Command
     protected function huntReddit($url, $keywords)
     {
         // Reddit requires a custom User-Agent to avoid 429/403 errors
-        $response = Http::withHeaders([
+        $response = Http::withoutVerifying()->withHeaders([
             'User-Agent' => 'JobHunterBot/1.0 (Laravel Application)'
         ])->get($url);
 
@@ -81,9 +81,13 @@ class HuntJobs extends Command
 
     protected function huntRSS($url, $keywords)
     {
+        $response = Http::withoutVerifying()->get($url);
+        if (!$response->successful())
+            return;
+
         // Turn off internal errors to handle malformed RSS gracefully
         libxml_use_internal_errors(true);
-        $xml = simplexml_load_file($url);
+        $xml = simplexml_load_string($response->body());
         if (!$xml)
             return;
 

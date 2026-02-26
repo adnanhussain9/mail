@@ -56,8 +56,8 @@ class ProcessSheetMails extends Command
             $processedInThisBatch = collect();
 
             foreach ($rows as $row) {
-                $email = isset($row[0]) ? trim($row[0]) : null;
-                $company = isset($row[1]) ? trim($row[1]) : null;
+                $company = isset($row[0]) ? trim($row[0]) : null;
+                $email = isset($row[1]) ? trim($row[1]) : null;
                 $position = isset($row[2]) ? trim($row[2]) : null;
 
                 if (!$email || !$company || !$position) {

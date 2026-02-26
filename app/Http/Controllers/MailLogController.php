@@ -7,16 +7,30 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\MailLog;
 use App\Models\MailSetting;
 
+use Inertia\Inertia;
+use Inertia\Response;
+
 class MailLogController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
-        $logs = MailLog::latest()->paginate(20);
+        $logs = MailLog::latest()->paginate(20)->through(fn($log) => [
+            'id' => $log->id,
+            'email' => $log->email,
+            'company_name' => $log->company_name,
+            'position_name' => $log->position_name,
+            'sent_at' => $log->sent_at->diffForHumans(),
+        ]);
+
         $settings = MailSetting::first() ?? new MailSetting([
             'subject' => 'Application for {position} at {company}',
             'body' => "Hello!\n\nI am interested in applying for the {position} position at {company}.\n\nBest regards,\nAutomated System",
         ]);
-        return view('dashboard', compact('logs', 'settings'));
+        return Inertia::render('Dashboard', [
+            'logs' => $logs,
+            'settings' => $settings,
+            'status' => session('success'),
+        ]);
     }
 
     public function updateSettings(Request $request)

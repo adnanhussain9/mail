@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { Head, router, useForm } from '@inertiajs/react';
-import { CheckCircle2, Clock, ExternalLink, Mail, Play, Plus, PlusCircle, RefreshCcw, Save, Search, Target } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { CheckCircle2, Clock, ExternalLink, FileSpreadsheet, Mail, Play, Plus, PlusCircle, RefreshCcw, Save, Search, Target } from 'lucide-react';
 
 interface Log {
     id: number;
@@ -80,11 +80,16 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                         Mail Automated
                     </h2>
                     <div className="flex items-center gap-2">
+                        <Button variant="outline" asChild className="gap-2">
+                            <Link href={route('sheet.view')}>
+                                <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
+                                View Sheet
+                            </Link>
+                        </Button>
                         {import.meta.env.VITE_GOOGLE_SHEET_URL && (
-                            <Button variant="outline" asChild className="gap-2">
+                            <Button variant="outline" size="icon" asChild title="Open in Google Sheets">
                                 <a href={import.meta.env.VITE_GOOGLE_SHEET_URL} target="_blank" rel="noopener noreferrer">
-                                    <ExternalLink className="h-4 w-4" />
-                                    View Sheet
+                                    <ExternalLink className="h-4 w-4 text-zinc-400" />
                                 </a>
                             </Button>
                         )}

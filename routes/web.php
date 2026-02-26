@@ -9,6 +9,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings', [MailLogController::class, 'updateSettings'])->name('settings.update');
     Route::post('/process-sheet', [MailLogController::class, 'processSheet'])->name('process.sheet');
     Route::post('/add-to-sheet', [MailLogController::class, 'addToSheet'])->name('sheet.add');
+    Route::get('/view-sheet', [MailLogController::class, 'viewSheet'])->name('sheet.view');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

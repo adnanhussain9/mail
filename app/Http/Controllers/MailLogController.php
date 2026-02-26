@@ -150,4 +150,27 @@ class MailLogController extends Controller
             return back()->with('error', 'Error adding to sheet: ' . $e->getMessage());
         }
     }
+
+    public function viewSheet(): Response
+    {
+        $spreadsheetId = config('services.google.sheet_id');
+        $sheetName = config('services.google.sheet_name', 'Sheet1');
+
+        if (!$spreadsheetId) {
+            abort(500, 'GOOGLE_SHEET_ID is not set in .env');
+        }
+
+        try {
+            $rows = Sheets::spreadsheet($spreadsheetId)
+                ->sheet($sheetName)
+                ->get();
+
+            return Inertia::render('ViewSheet', [
+                'rows' => $rows,
+                'sheetName' => $sheetName,
+            ]);
+        } catch (\Exception $e) {
+            abort(500, 'Error accessing Google Sheets: ' . $e->getMessage());
+        }
+    }
 }

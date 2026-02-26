@@ -13,30 +13,32 @@ export default function ViewSheet({ rows, sheetName }: { rows: string[][]; sheet
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" asChild>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <Button variant="ghost" size="icon" asChild className="shrink-0">
                             <Link href={route('dashboard')}>
                                 <ChevronLeft className="h-5 w-5" />
                             </Link>
                         </Button>
-                        <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                            <FileSpreadsheet className="h-6 w-6 text-emerald-500" />
-                            {sheetName}
+                        <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-2 truncate">
+                            <FileSpreadsheet className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-500 shrink-0" />
+                            <span className="truncate">{sheetName}</span>
                         </h2>
                     </div>
                     <div className="flex items-center gap-2">
                         {import.meta.env.VITE_GOOGLE_SHEET_URL && (
-                            <Button variant="outline" asChild className="gap-2">
+                            <Button variant="outline" asChild className="gap-2 flex-1 sm:flex-none py-1 h-9">
                                 <a href={import.meta.env.VITE_GOOGLE_SHEET_URL} target="_blank" rel="noopener noreferrer">
                                     <ExternalLink className="h-4 w-4" />
-                                    Open External
+                                    <span className="hidden xs:inline">Open External</span>
+                                    <span className="xs:hidden">External</span>
                                 </a>
                             </Button>
                         )}
-                        <Button variant="outline" onClick={() => window.location.reload()} className="gap-2">
+                        <Button variant="outline" onClick={() => window.location.reload()} className="gap-2 flex-1 sm:flex-none py-1 h-9">
                             <RefreshCcw className="h-4 w-4" />
-                            Refresh Data
+                            <span className="hidden xs:inline">Refresh Data</span>
+                            <span className="xs:hidden">Refresh</span>
                         </Button>
                     </div>
                 </div>
@@ -44,45 +46,49 @@ export default function ViewSheet({ rows, sheetName }: { rows: string[][]; sheet
         >
             <Head title={`View Sheet - ${sheetName}`} />
 
-            <div className="py-8">
+            <div className="py-4 sm:py-8">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <Card className="shadow-xl overflow-hidden border-zinc-200 dark:border-zinc-800">
-                        <CardHeader className="bg-zinc-50 dark:bg-zinc-900 border-b">
-                            <CardTitle className="text-sm font-medium text-zinc-500 flex items-center gap-2">
-                                Raw Data from Google Sheets
-                                <span className="text-xs bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-600">
-                                    {data.length} Rows found
+                        <CardHeader className="bg-zinc-50 dark:bg-zinc-900 border-b py-3 px-4">
+                            <CardTitle className="text-xs sm:text-sm font-medium text-zinc-500 flex items-center gap-2">
+                                Raw Data
+                                <span className="text-[10px] bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-600 font-bold">
+                                    {data.length} Rows
                                 </span>
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-0 overflow-auto max-h-[70vh]">
+                        <CardContent className="p-0 overflow-auto max-h-[60vh] sm:max-h-[70vh]">
                             {rows.length === 0 ? (
-                                <div className="text-center py-20 bg-zinc-50/50">
-                                    <p className="text-zinc-500 font-medium">This sheet appears to be empty.</p>
+                                <div className="text-center py-16 sm:py-20 bg-zinc-50/50 px-4">
+                                    <p className="text-zinc-500 font-medium text-sm">This sheet appears to be empty.</p>
                                 </div>
                             ) : (
-                                <Table>
-                                    <TableHeader className="bg-zinc-100 dark:bg-zinc-800 sticky top-0 z-10">
-                                        <TableRow>
-                                            {header.map((col, i) => (
-                                                <TableHead key={i} className="font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider text-[11px]">
-                                                    {col}
-                                                </TableHead>
-                                            ))}
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {data.map((row, rowIndex) => (
-                                            <TableRow key={rowIndex} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
-                                                {header.map((_, colIndex) => (
-                                                    <TableCell key={colIndex} className="py-4 text-sm">
-                                                        {row[colIndex] || <span className="text-zinc-300 italic">empty</span>}
-                                                    </TableCell>
+                                <div className="min-w-full inline-block align-middle">
+                                    <div className="overflow-x-auto">
+                                        <Table className="min-w-[600px]">
+                                            <TableHeader className="bg-zinc-100 dark:bg-zinc-800 sticky top-0 z-10">
+                                                <TableRow>
+                                                    {header.map((col, i) => (
+                                                        <TableHead key={i} className="font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider text-[10px] py-3">
+                                                            {col}
+                                                        </TableHead>
+                                                    ))}
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {data.map((row, rowIndex) => (
+                                                    <TableRow key={rowIndex} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
+                                                        {header.map((_, colIndex) => (
+                                                            <TableCell key={colIndex} className="py-3 px-4 text-xs sm:text-sm">
+                                                                {row[colIndex] || <span className="text-zinc-300 italic text-[10px]">empty</span>}
+                                                            </TableCell>
+                                                        ))}
+                                                    </TableRow>
                                                 ))}
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
                             )}
                         </CardContent>
                     </Card>

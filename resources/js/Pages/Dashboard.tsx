@@ -75,31 +75,32 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
                     <h2 className="text-2xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
                         Mail Automated
                     </h2>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" asChild className="gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button variant="outline" asChild className="gap-2 flex-1 sm:flex-none">
                             <Link href={route('sheet.view')}>
                                 <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
-                                View Sheet
+                                <span className="hidden xs:inline">View Sheet</span>
+                                <span className="xs:hidden">Sheet</span>
                             </Link>
                         </Button>
                         {import.meta.env.VITE_GOOGLE_SHEET_URL && (
-                            <Button variant="outline" size="icon" asChild title="Open in Google Sheets">
+                            <Button variant="outline" size="icon" asChild title="Open in Google Sheets" className="hidden sm:inline-flex">
                                 <a href={import.meta.env.VITE_GOOGLE_SHEET_URL} target="_blank" rel="noopener noreferrer">
                                     <ExternalLink className="h-4 w-4 text-zinc-400" />
                                 </a>
                             </Button>
                         )}
-                        <Button variant="outline" onClick={processSheet} className="gap-2 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800">
+                        <Button variant="outline" onClick={processSheet} className="gap-2 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 flex-1 sm:flex-none">
                             <Play className="h-4 w-4 fill-current" />
-                            Run Processor
+                            Run <span className="hidden xs:inline">Processor</span>
                         </Button>
-                        <Button variant="outline" onClick={refreshDashboard} className="gap-2">
+                        <Button variant="outline" onClick={refreshDashboard} className="gap-2 flex-1 sm:flex-none">
                             <RefreshCcw className="h-4 w-4" />
-                            Refresh
+                            <span className="hidden xs:inline">Refresh</span>
                         </Button>
                     </div>
                 </div>
@@ -107,18 +108,18 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
         >
             <Head title="Dashboard" />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+            <div className="py-4 sm:py-8">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <Card className="relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500 opacity-50" />
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-bold uppercase tracking-wider">Total Processed</CardDescription>
-                                <CardTitle className="text-3xl font-extrabold flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                                <CardDescription className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Processed</CardDescription>
+                                <CardTitle className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
                                     {logs.total}
-                                    <Mail className="h-6 w-6 opacity-20" />
+                                    <Mail className="h-5 w-5 sm:h-6 sm:w-6 opacity-20" />
                                 </CardTitle>
                             </CardHeader>
                         </Card>
@@ -126,19 +127,19 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                         <Card className="relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 opacity-50" />
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-bold uppercase tracking-wider">Check Interval</CardDescription>
-                                <CardTitle className="text-3xl font-extrabold flex items-center gap-2">
+                                <CardDescription className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Check Interval</CardDescription>
+                                <CardTitle className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2">
                                     1 min
-                                    <Clock className="h-6 w-6 text-amber-500 opacity-20" />
+                                    <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-amber-500 opacity-20" />
                                 </CardTitle>
                             </CardHeader>
                         </Card>
 
-                        <Card className="relative overflow-hidden">
+                        <Card className="relative overflow-hidden sm:col-span-2 lg:col-span-1">
                             <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-50" />
                             <CardHeader className="pb-2">
-                                <CardDescription className="text-xs font-bold uppercase tracking-wider">System Status</CardDescription>
-                                <CardTitle className="text-3xl font-extrabold flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                                <CardDescription className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">System Status</CardDescription>
+                                <CardTitle className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                                     Active
                                     <span className="relative flex h-3 w-3">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -151,10 +152,10 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
 
                     {/* Quick Add Entry */}
                     <Card className="shadow-lg border-zinc-200 dark:border-zinc-800">
-                        <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50">
+                        <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50 py-4">
                             <div className="flex items-center gap-2">
                                 <PlusCircle className="h-5 w-5 text-indigo-500" />
-                                <CardTitle>Quick Add Entry to Sheet</CardTitle>
+                                <CardTitle className="text-lg">Quick Add Entry</CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">
@@ -200,15 +201,15 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
 
                     {/* Configuration Form */}
                     <Card className="shadow-lg border-zinc-200 dark:border-zinc-800">
-                        <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50">
+                        <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50 py-4">
                             <div className="flex items-center gap-2">
                                 <Save className="h-5 w-5 text-indigo-500" />
-                                <CardTitle>Configuration & Automation</CardTitle>
+                                <CardTitle className="text-lg">Configuration</CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">
                             <form onSubmit={submit} className="space-y-6">
-                                <div className="flex flex-wrap gap-2 text-xs font-mono mb-4 text-zinc-500 bg-zinc-100 dark:bg-zinc-800 p-2 rounded-md">
+                                <div className="flex flex-wrap gap-2 text-[10px] sm:text-xs font-mono mb-4 text-zinc-500 bg-zinc-100 dark:bg-zinc-800 p-2 rounded-md">
                                     <span className="font-semibold">Dynamic Fields:</span>
                                     <code className="text-indigo-500">{'{email}'}</code>
                                     <code className="text-indigo-500">{'{company}'}</code>
@@ -247,14 +248,14 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                                         onChange={e => setData('attachment', e.target.files?.[0] || null)}
                                     />
                                     {settings.attachment_path && !data.attachment && (
-                                        <div className="flex items-center gap-2 mt-2 text-emerald-600 font-semibold text-xs">
+                                        <div className="flex items-center gap-2 mt-2 text-emerald-600 font-semibold text-[10px] sm:text-xs">
                                             <CheckCircle2 className="h-4 w-4" />
                                             Linked: {settings.attachment_path.split('/').pop()}
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="p-6 rounded-xl border border-dashed border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-950/20 space-y-4">
+                                <div className="p-4 sm:p-6 rounded-xl border border-dashed border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-950/20 space-y-4">
                                     <div className="flex items-center gap-2">
                                         <div className="bg-indigo-500 text-white p-1.5 rounded-lg">
                                             <Target className="h-4 w-4" />
@@ -309,53 +310,55 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
 
                     {/* Logs Table */}
                     <Card className="shadow-lg">
-                        <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50">
+                        <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50 py-4">
                             <div className="flex items-center gap-2">
                                 <Search className="h-5 w-5 text-indigo-500" />
-                                <CardTitle>Transmission Logs</CardTitle>
+                                <CardTitle className="text-lg">Transmission Logs</CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent className="p-0">
                             {logs.data.length === 0 ? (
-                                <div className="text-center py-12 space-y-3">
-                                    <p className="text-zinc-500">No mails sent yet. Start the scheduler to begin.</p>
-                                    <code className="bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-md text-zinc-600 dark:text-zinc-400 font-mono text-sm border border-zinc-200 dark:border-zinc-700">
+                                <div className="text-center py-12 px-4 space-y-3">
+                                    <p className="text-zinc-500 italic">No mails sent yet. Start the scheduler to begin.</p>
+                                    <code className="inline-block bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-md text-zinc-600 dark:text-zinc-400 font-mono text-[10px] sm:text-xs border border-zinc-200 dark:border-zinc-700 break-all">
                                         php artisan schedule:work
                                     </code>
                                 </div>
                             ) : (
-                                <>
-                                    <Table>
-                                        <TableHeader className="bg-zinc-50 dark:bg-zinc-900">
-                                            <TableRow>
-                                                <TableHead className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">Recipient</TableHead>
-                                                <TableHead className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">Company</TableHead>
-                                                <TableHead className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">Position</TableHead>
-                                                <TableHead className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">Sent At</TableHead>
-                                                <TableHead className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">Status</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {logs.data.map((log) => (
-                                                <TableRow key={log.id}>
-                                                    <TableCell className="font-bold py-4">{log.email}</TableCell>
-                                                    <TableCell>{log.company_name}</TableCell>
-                                                    <TableCell>{log.position_name}</TableCell>
-                                                    <TableCell className="text-zinc-500">{log.sent_at}</TableCell>
-                                                    <TableCell>
-                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                                                            Sent
-                                                        </span>
-                                                    </TableCell>
+                                <div className="space-y-0">
+                                    <div className="overflow-x-auto">
+                                        <Table className="min-w-[600px] w-full">
+                                            <TableHeader className="bg-zinc-50 dark:bg-zinc-900">
+                                                <TableRow>
+                                                    <TableHead className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">Recipient</TableHead>
+                                                    <TableHead className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">Company</TableHead>
+                                                    <TableHead className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">Position</TableHead>
+                                                    <TableHead className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">Sent At</TableHead>
+                                                    <TableHead className="font-bold text-zinc-500 uppercase tracking-wider text-[10px] text-right px-4">Status</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {logs.data.map((log) => (
+                                                    <TableRow key={log.id}>
+                                                        <TableCell className="font-bold py-4 text-xs sm:text-sm">{log.email}</TableCell>
+                                                        <TableCell className="text-xs sm:text-sm">{log.company_name}</TableCell>
+                                                        <TableCell className="text-xs sm:text-sm">{log.position_name}</TableCell>
+                                                        <TableCell className="text-zinc-500 text-xs">{log.sent_at}</TableCell>
+                                                        <TableCell className="text-right px-4">
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                                                                Sent
+                                                            </span>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
 
                                     {/* Simple Pagination */}
                                     {logs.links.length > 3 && (
-                                        <div className="p-4 border-t bg-zinc-50/30 dark:bg-zinc-900/10">
-                                            <div className="flex gap-2 justify-center">
+                                        <div className="p-4 border-t bg-zinc-50/30 dark:bg-zinc-900/10 overflow-x-auto">
+                                            <div className="flex gap-1 sm:gap-2 justify-center min-w-max">
                                                 {logs.links.map((link, i) => (
                                                     <Button
                                                         key={i}
@@ -364,13 +367,13 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                                                         disabled={!link.url}
                                                         onClick={() => link.url && router.get(link.url)}
                                                         dangerouslySetInnerHTML={{ __html: link.label }}
-                                                        className="font-bold rounded-lg"
+                                                        className={`font-semibold rounded-lg text-xs ${!link.url ? 'opacity-50' : ''}`}
                                                     />
                                                 ))}
                                             </div>
                                         </div>
                                     )}
-                                </>
+                                </div>
                             )}
                         </CardContent>
                     </Card>

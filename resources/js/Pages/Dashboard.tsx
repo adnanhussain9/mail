@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { Head, router, useForm } from '@inertiajs/react';
-import { CheckCircle2, Clock, ExternalLink, Mail, RefreshCcw, Save, Search, Target } from 'lucide-react';
+import { CheckCircle2, Clock, ExternalLink, Mail, Play, RefreshCcw, Save, Search, Target } from 'lucide-react';
 
 interface Log {
     id: number;
@@ -49,6 +49,12 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
         });
     };
 
+    const processSheet = () => {
+        router.post(route('process.sheet'), {}, {
+            preserveScroll: true,
+        });
+    };
+
     const refreshDashboard = () => {
         router.get(route('dashboard'), {}, { preserveState: false, preserveScroll: false });
     };
@@ -69,6 +75,10 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                                 </a>
                             </Button>
                         )}
+                        <Button variant="outline" onClick={processSheet} className="gap-2 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800">
+                            <Play className="h-4 w-4 fill-current" />
+                            Run Processor
+                        </Button>
                         <Button variant="outline" onClick={refreshDashboard} className="gap-2">
                             <RefreshCcw className="h-4 w-4" />
                             Refresh

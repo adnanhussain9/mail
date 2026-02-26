@@ -1,9 +1,9 @@
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 export default function ConfirmPassword() {
@@ -20,36 +20,32 @@ export default function ConfirmPassword() {
     };
 
     return (
-        <GuestLayout>
-            <Head title="Confirm Password" />
-
-            <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+        <GuestLayout title="Confirm Password">
+            <div className="mb-4 text-sm text-zinc-500">
                 This is a secure area of the application. Please confirm your
                 password before continuing.
             </div>
 
-            <form onSubmit={submit}>
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+            <form onSubmit={submit} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
 
-                    <TextInput
+                    <Input
                         id="password"
                         type="password"
                         name="password"
                         value={data.password}
-                        className="mt-1 block w-full"
-                        isFocused={true}
+                        className="block w-full"
                         onChange={(e) => setData('password', e.target.value)}
+                        autoFocus
                     />
 
-                    <InputError message={errors.password} className="mt-2" />
+                    <InputError message={errors.password} />
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Confirm
-                    </PrimaryButton>
-                </div>
+                <Button className="w-full" disabled={processing}>
+                    Confirm
+                </Button>
             </form>
         </GuestLayout>
     );

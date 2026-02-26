@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { Head, router, useForm } from '@inertiajs/react';
-import { CheckCircle2, Clock, ExternalLink, Mail, Play, RefreshCcw, Save, Search, Target } from 'lucide-react';
+import { CheckCircle2, Clock, ExternalLink, Mail, Play, Plus, PlusCircle, RefreshCcw, Save, Search, Target } from 'lucide-react';
 
 interface Log {
     id: number;
@@ -42,10 +42,23 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
         is_auto_hunting: settings.is_auto_hunting || false,
     });
 
+    const sheetForm = useForm({
+        company: '',
+        email: '',
+        position: '',
+    });
+
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('settings.update'), {
             forceFormData: true,
+        });
+    };
+
+    const submitSheetData = (e: React.FormEvent) => {
+        e.preventDefault();
+        sheetForm.post(route('sheet.add'), {
+            onSuccess: () => sheetForm.reset(),
         });
     };
 
@@ -130,6 +143,55 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                             </CardHeader>
                         </Card>
                     </div>
+
+                    {/* Quick Add Entry */}
+                    <Card className="shadow-lg border-zinc-200 dark:border-zinc-800">
+                        <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50">
+                            <div className="flex items-center gap-2">
+                                <PlusCircle className="h-5 w-5 text-indigo-500" />
+                                <CardTitle>Quick Add Entry to Sheet</CardTitle>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                            <form onSubmit={submitSheetData} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                <div className="space-y-2">
+                                    <Label htmlFor="q_company">Company</Label>
+                                    <Input
+                                        id="q_company"
+                                        value={sheetForm.data.company}
+                                        onChange={e => sheetForm.setData('company', e.target.value)}
+                                        placeholder="Company Name"
+                                    />
+                                    {sheetForm.errors.company && <p className="text-xs text-red-500">{sheetForm.errors.company}</p>}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="q_email">Email</Label>
+                                    <Input
+                                        id="q_email"
+                                        type="email"
+                                        value={sheetForm.data.email}
+                                        onChange={e => sheetForm.setData('email', e.target.value)}
+                                        placeholder="m@example.com"
+                                    />
+                                    {sheetForm.errors.email && <p className="text-xs text-red-500">{sheetForm.errors.email}</p>}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="q_position">Position</Label>
+                                    <Input
+                                        id="q_position"
+                                        value={sheetForm.data.position}
+                                        onChange={e => sheetForm.setData('position', e.target.value)}
+                                        placeholder="e.g. Web Developer"
+                                    />
+                                    {sheetForm.errors.position && <p className="text-xs text-red-500">{sheetForm.errors.position}</p>}
+                                </div>
+                                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 font-bold" disabled={sheetForm.processing}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add to Sheet
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
 
                     {/* Configuration Form */}
                     <Card className="shadow-lg border-zinc-200 dark:border-zinc-800">

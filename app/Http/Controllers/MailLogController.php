@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use App\Models\MailLog;
 use App\Models\MailSetting;
@@ -173,6 +174,52 @@ class MailLogController extends Controller
             ]);
         } catch (\Exception $e) {
             abort(500, 'Error accessing Google Sheets: ' . $e->getMessage());
+        }
+    }
+    public function generateEmailBody(Request $request)
+    {
+        $request->validate([
+            'jd' => 'required|string',
+        ]);
+
+        $apiKey = config('services.google.gemini_api_key');
+
+        if (!$apiKey) {
+            return response()->json(['error' => 'GEMINI_API_KEY is not configured.'], 400);
+        }
+
+        try {
+            $prompt = "You are a professional software developer assistant. Generate a highly personalized and professional application email body based on the following Job Description (JD). 
+            The email should be sent from Syed Adnan Hussain.
+            Use the following placeholders in the email: {company} for the company name and {position} for the job title. 
+            Ensure the tone is professional, confident, and enthusiastic. 
+            Do not include any other text beside the email body itself.
+            Job Description:
+            {$request->jd}";
+
+            $response = Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={$apiKey}", [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $prompt]
+                        ]
+                    ]
+                ]
+            ]);
+
+            if ($response->successful()) {
+                $result = $response->json();
+                $generatedText = $result['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+                // Clean up any extra markdown or formatting if AI adds it
+                $generatedText = trim($generatedText);
+
+                return response()->json(['body' => $generatedText]);
+            }
+
+            return response()->json(['error' => 'AI Generation failed: ' . $response->body()], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'AI Generation error: ' . $e->getMessage()], 500);
         }
     }
 }

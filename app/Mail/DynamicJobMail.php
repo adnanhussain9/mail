@@ -77,9 +77,10 @@ class DynamicJobMail extends Mailable
     {
         $settings = MailSetting::first();
         if ($settings && $settings->attachment_path && Storage::exists($settings->attachment_path)) {
+            $filename = (config('app.name') ?: 'My') . '_RESUME.pdf';
             return [
-                Attachment::fromPath(storage_path('app/' . $settings->attachment_path))
-                    ->as('Attachment.pdf')
+                Attachment::fromPath(Storage::path($settings->attachment_path))
+                    ->as($filename)
                     ->withMime('application/pdf'),
             ];
         }

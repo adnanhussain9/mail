@@ -39,6 +39,7 @@ return [
         'sheet_id' => env('GOOGLE_SHEET_ID'),
         'sheet_name' => env('GOOGLE_SHEET_NAME', 'Sheet1'),
         'service_account' => env('GOOGLE_SERVICE_ACCOUNT_JSON'), // Path to JSON or JSON string
+        'gemini_api_key' => env('GEMINI_API_KEY'),
     ],
 
 ];

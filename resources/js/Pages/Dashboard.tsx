@@ -1,4 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { useState } from 'react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { CheckCircle2, Clock, ExternalLink, FileSpreadsheet, Mail, Play, Plus, PlusCircle, RefreshCcw, Save, Search, Target } from 'lucide-react';
+import { CheckCircle2, Clock, ExternalLink, FileSpreadsheet, Mail, Play, Plus, PlusCircle, RefreshCcw, Save, Search, Target, Wand2 } from 'lucide-react';
 
 interface Log {
     id: number;
@@ -41,6 +43,25 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
         search_keywords: settings.search_keywords || '',
         is_auto_hunting: settings.is_auto_hunting || false,
     });
+
+    const [jd, setJd] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const handleGenerateAI = async () => {
+        if (!jd) return;
+        setIsGenerating(true);
+        try {
+            const response = await axios.post(route('email.generate'), { jd });
+            if (response.data.body) {
+                setData('body', response.data.body);
+            }
+        } catch (error: any) {
+            console.error('AI Generation failed', error);
+            alert(error.response?.data?.error || 'AI Generation failed');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
 
     const sheetForm = useForm({
         company: '',
@@ -226,6 +247,39 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                                         placeholder="e.g. Applying for {position} at {company}"
                                     />
                                     {errors.subject && <p className="text-xs text-red-500 font-medium">{errors.subject}</p>}
+                                </div>
+
+                                <div className="space-y-4 border-2 border-dashed border-indigo-100 dark:border-indigo-900/30 p-4 rounded-xl bg-indigo-50/10">
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="jd" className="text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-2">
+                                            <Wand2 className="h-4 w-4" />
+                                            AI Assistant: Paste Job Description
+                                        </Label>
+                                        <Button
+                                            type="button"
+                                            onClick={handleGenerateAI}
+                                            disabled={!jd || isGenerating}
+                                            variant="outline"
+                                            size="sm"
+                                            className="bg-indigo-600 text-white hover:bg-indigo-700 border-none transition-all duration-300"
+                                        >
+                                            {isGenerating ? (
+                                                <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
+                                            ) : (
+                                                <Wand2 className="h-4 w-4 mr-2" />
+                                            )}
+                                            {isGenerating ? 'Generating...' : 'Generate with AI'}
+                                        </Button>
+                                    </div>
+                                    <Textarea
+                                        id="jd"
+                                        rows={4}
+                                        value={jd}
+                                        onChange={e => setJd(e.target.value)}
+                                        placeholder="Paste the job description here and I'll write the email for you..."
+                                        className="bg-white dark:bg-zinc-950"
+                                    />
+                                    <p className="text-[10px] text-zinc-500 italic">This will overwrite your current email body with a professional alternative based on the JD.</p>
                                 </div>
 
                                 <div className="space-y-2">

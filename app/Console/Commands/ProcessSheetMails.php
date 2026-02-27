@@ -59,6 +59,7 @@ class ProcessSheetMails extends Command
                 $company = isset($row[0]) ? trim($row[0]) : null;
                 $email = isset($row[1]) ? trim($row[1]) : null;
                 $position = isset($row[2]) ? trim($row[2]) : null;
+                $link = isset($row[3]) ? trim($row[3]) : null;
 
                 if (!$email || !$company || !$position) {
                     continue;
@@ -77,7 +78,7 @@ class ProcessSheetMails extends Command
                 ])->exists();
 
                 if (!$exists) {
-                    $this->info("Sending mail to {$email} for {$position} at {$company}...");
+                    $this->info("Sending mail to {$email} for {$position} at {$company} (Link: " . ($link ?? 'N/A') . ")...");
 
                     try {
                         Mail::to($email)->send(new DynamicJobMail($email, $company, $position));

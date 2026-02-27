@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
-        $schedule->command('mail:process-sheet')->everyMinute();
+        // $schedule->command('mail:process-sheet')->everyMinute();
         $schedule->command('mail:hunt')->hourly();
     })
     ->withExceptions(function (Exceptions $exceptions): void {

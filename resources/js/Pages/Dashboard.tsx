@@ -46,6 +46,7 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
         company: '',
         email: '',
         position: '',
+        link: '',
     });
 
     const submit = (e: React.FormEvent) => {
@@ -129,7 +130,7 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                             <CardHeader className="pb-2">
                                 <CardDescription className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Check Interval</CardDescription>
                                 <CardTitle className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2">
-                                    1 min
+                                    Hourly
                                     <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-amber-500 opacity-20" />
                                 </CardTitle>
                             </CardHeader>
@@ -159,7 +160,7 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6">
-                            <form onSubmit={submitSheetData} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                            <form onSubmit={submitSheetData} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                                 <div className="space-y-2">
                                     <Label htmlFor="q_company">Company</Label>
                                     <Input
@@ -191,7 +192,7 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                                     />
                                     {sheetForm.errors.position && <p className="text-xs text-red-500">{sheetForm.errors.position}</p>}
                                 </div>
-                                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 font-bold" disabled={sheetForm.processing}>
+                                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 font-bold sm:col-span-2 lg:col-span-1" disabled={sheetForm.processing}>
                                     <Plus className="h-4 w-4 mr-2" />
                                     Add to Sheet
                                 </Button>
@@ -288,7 +289,7 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                                                 Enable Autonomous Job Hunting
                                             </label>
                                             <p className="text-xs text-zinc-500">
-                                                The system will automatically scan Reddit and RSS feeds for matching posts and send your application.
+                                                The system will automatically scan Reddit and RSS feeds for matching posts and add them to your Google Sheet for review.
                                             </p>
                                         </div>
                                     </div>

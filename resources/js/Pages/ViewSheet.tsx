@@ -78,11 +78,23 @@ export default function ViewSheet({ rows, sheetName }: { rows: string[][]; sheet
                                             <TableBody>
                                                 {data.map((row, rowIndex) => (
                                                     <TableRow key={rowIndex} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
-                                                        {header.map((_, colIndex) => (
-                                                            <TableCell key={colIndex} className="py-3 px-4 text-xs sm:text-sm">
-                                                                {row[colIndex] || <span className="text-zinc-300 italic text-[10px]">empty</span>}
-                                                            </TableCell>
-                                                        ))}
+                                                        {header.map((_, colIndex) => {
+                                                            const value = row[colIndex];
+                                                            const isUrl = value && String(value).startsWith('http');
+
+                                                            return (
+                                                                <TableCell key={colIndex} className="py-3 px-4 text-xs sm:text-sm">
+                                                                    {isUrl ? (
+                                                                        <a href={value} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 font-medium group">
+                                                                            <span className="truncate max-w-[150px]">{value}</span>
+                                                                            <ExternalLink className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                                        </a>
+                                                                    ) : (
+                                                                        value || <span className="text-zinc-300 italic text-[10px]">empty</span>
+                                                                    )}
+                                                                </TableCell>
+                                                            );
+                                                        })}
                                                     </TableRow>
                                                 ))}
                                             </TableBody>

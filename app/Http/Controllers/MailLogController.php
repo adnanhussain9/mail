@@ -89,6 +89,7 @@ class MailLogController extends Controller
                 $company = isset($row[0]) ? trim($row[0]) : null;
                 $email = isset($row[1]) ? trim($row[1]) : null;
                 $position = isset($row[2]) ? trim($row[2]) : null;
+                $link = isset($row[3]) ? trim($row[3]) : null;
 
                 if (!$email || !$company || !$position) {
                     continue;
@@ -131,6 +132,7 @@ class MailLogController extends Controller
             'company' => 'required|string',
             'email' => 'required|email',
             'position' => 'required|string',
+            'link' => 'nullable|string',
         ]);
 
         $spreadsheetId = config('services.google.sheet_id');
@@ -143,7 +145,7 @@ class MailLogController extends Controller
         try {
             Sheets::spreadsheet($spreadsheetId)
                 ->sheet($sheetName)
-                ->append([[$request->company, $request->email, $request->position]]);
+                ->append([[$request->company, $request->email, $request->position, $request->link ?? 'N/A']]);
 
             return back()->with('success', 'Entry added to sheet successfully!');
         } catch (\Exception $e) {

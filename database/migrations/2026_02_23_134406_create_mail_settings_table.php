@@ -14,6 +14,9 @@ return new class extends Migration {
             $table->id();
             $table->string('subject');
             $table->text('body');
+            $table->string('attachment_path')->nullable()->after('body');
+            $table->string('search_keywords')->nullable();
+            $table->boolean('is_auto_hunting')->default(false);
             $table->timestamps();
         });
     }

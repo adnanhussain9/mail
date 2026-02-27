@@ -28,7 +28,7 @@ class MailLogController extends Controller
 
         $settings = MailSetting::first() ?? new MailSetting([
             'subject' => 'Application for {position} at {company}',
-            'body' => "Hello!\n\nI am interested in applying for the {position} position at {company}.\n\nBest regards,\nSyed Adnan Hussain\nWeb Developer",
+            'body' => "Hello!\n\nI am interested in applying for the {position} position at {company}.\n\nBest regards,\n" . config('app.name') . "\nWeb Developer",
         ]);
         return Inertia::render('Dashboard', [
             'logs' => $logs,
@@ -190,7 +190,7 @@ class MailLogController extends Controller
 
         try {
             $prompt = "You are a professional software developer assistant. Generate a highly personalized and professional application email body based on the following Job Description (JD). 
-            The email should be sent from Syed Adnan Hussain.
+            The email should be sent from " . config('app.name') . ".
             Use the following placeholders in the email: {company} for the company name and {position} for the job title. 
             Ensure the tone is professional, confident, and enthusiastic. 
             Do not include any other text beside the email body itself.

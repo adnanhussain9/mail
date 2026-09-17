@@ -101,7 +101,7 @@ export default function Login({
                     Log in
                 </Button>
 
-                <div className="text-center text-sm">
+                {/* <div className="text-center text-sm">
                     Don't have an account?{' '}
                     <Link
                         href={route('register')}
@@ -109,7 +109,7 @@ export default function Login({
                     >
                         Register
                     </Link>
-                </div>
+                </div> */}
             </form>
         </GuestLayout>
     );

@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { CheckCircle2, Clock, ExternalLink, FileSpreadsheet, Mail, Play, Plus, PlusCircle, RefreshCcw, Save, Search, Target, Wand2 } from 'lucide-react';
 
@@ -74,13 +76,17 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
         e.preventDefault();
         post(route('settings.update'), {
             forceFormData: true,
+            onSuccess: () => toast.success('Configuration saved successfully!'),
         });
     };
 
     const submitSheetData = (e: React.FormEvent) => {
         e.preventDefault();
         sheetForm.post(route('sheet.add'), {
-            onSuccess: () => sheetForm.reset(),
+            onSuccess: () => {
+                sheetForm.reset();
+                toast.success('Entry added to sheet!');
+            },
         });
     };
 
@@ -129,48 +135,10 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
             }
         >
             <Head title="Dashboard" />
+            <Toaster />
 
             <div className="py-4 sm:py-8">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        <Card className="relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500 opacity-50" />
-                            <CardHeader className="pb-2">
-                                <CardDescription className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Processed</CardDescription>
-                                <CardTitle className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
-                                    {logs.total}
-                                    <Mail className="h-5 w-5 sm:h-6 sm:w-6 opacity-20" />
-                                </CardTitle>
-                            </CardHeader>
-                        </Card>
-
-                        <Card className="relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 opacity-50" />
-                            <CardHeader className="pb-2">
-                                <CardDescription className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Check Interval</CardDescription>
-                                <CardTitle className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2">
-                                    Hourly
-                                    <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-amber-500 opacity-20" />
-                                </CardTitle>
-                            </CardHeader>
-                        </Card>
-
-                        <Card className="relative overflow-hidden sm:col-span-2 lg:col-span-1">
-                            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-50" />
-                            <CardHeader className="pb-2">
-                                <CardDescription className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">System Status</CardDescription>
-                                <CardTitle className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                                    Active
-                                    <span className="relative flex h-3 w-3">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                                    </span>
-                                </CardTitle>
-                            </CardHeader>
-                        </Card>
-                    </div>
 
                     {/* Quick Add Entry */}
                     <Card className="shadow-lg border-zinc-200 dark:border-zinc-800">
@@ -362,7 +330,46 @@ export default function Dashboard({ logs, settings, status }: { logs: PaginatedL
                             </form>
                         </CardContent>
                     </Card>
+                    
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                        <Card className="relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500 opacity-50" />
+                            <CardHeader className="pb-2">
+                                <CardDescription className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Processed</CardDescription>
+                                <CardTitle className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                                    {logs.total}
+                                    <Mail className="h-5 w-5 sm:h-6 sm:w-6 opacity-20" />
+                                </CardTitle>
+                            </CardHeader>
+                        </Card>
 
+                        <Card className="relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 opacity-50" />
+                            <CardHeader className="pb-2">
+                                <CardDescription className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Check Interval</CardDescription>
+                                <CardTitle className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2">
+                                    Hourly
+                                    <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-amber-500 opacity-20" />
+                                </CardTitle>
+                            </CardHeader>
+                        </Card>
+
+                        <Card className="relative overflow-hidden sm:col-span-2 lg:col-span-1">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-50" />
+                            <CardHeader className="pb-2">
+                                <CardDescription className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">System Status</CardDescription>
+                                <CardTitle className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                                    Active
+                                    <span className="relative flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                                    </span>
+                                </CardTitle>
+                            </CardHeader>
+                        </Card>
+                    </div>
+                    
                     {/* Logs Table */}
                     <Card className="shadow-lg">
                         <CardHeader className="border-b bg-zinc-50/50 dark:bg-zinc-900/50 py-4">

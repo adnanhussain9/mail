@@ -23,17 +23,15 @@ class DynamicJobMail extends Mailable
         public string $email,
         public string $companyName,
         public string $positionName,
-    ) {
-        //
-    }
+        public MailSetting $settings
+    ) {}
 
     /**
      * Get the message envelope.
      */
     public function envelope(): Envelope
     {
-        $settings = MailSetting::first();
-        $subject = $settings ? $settings->subject : "Application for {position} at {company}";
+        $subject = $this->settings->subject ?? "Application for {position} at {company}";
 
         $parsedSubject = str_replace(
             ['{email}', '{company}', '{position}'],
@@ -51,8 +49,7 @@ class DynamicJobMail extends Mailable
      */
     public function content(): Content
     {
-        $settings = MailSetting::first();
-        $body = $settings ? $settings->body : "Hello! I am applying for {position} at {company}.";
+        $body = $this->settings->body ?? "Hello! I am applying for {position} at {company}.";
 
         $parsedBody = str_replace(
             ['{email}', '{company}', '{position}'],
@@ -75,11 +72,10 @@ class DynamicJobMail extends Mailable
      */
     public function attachments(): array
     {
-        $settings = MailSetting::first();
-        if ($settings && $settings->attachment_path && Storage::exists($settings->attachment_path)) {
-            $filename = (config('app.name') ?: 'My') . '_RESUME.pdf';
+        if ($this->settings->attachment_path && Storage::exists($this->settings->attachment_path)) {
+            $filename = ($this->settings->user->name ?? config('app.name')) . '_RESUME.pdf';
             return [
-                Attachment::fromPath(Storage::path($settings->attachment_path))
+                Attachment::fromPath(Storage::path($this->settings->attachment_path))
                     ->as($filename)
                     ->withMime('application/pdf'),
             ];

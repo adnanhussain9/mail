@@ -2,20 +2,42 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState } from 'react';
+import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
+import { ShieldCheck, Settings, FileSpreadsheet, Play } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { router } from '@inertiajs/react';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 export default function Authenticated({
     header,
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
-    const user = usePage().props.auth.user;
+    const user: any = usePage().props.auth.user;
+    const flash: any = usePage().props.flash;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
+
+    const processSheet = () => {
+        router.post(route('process.sheet'), {}, {
+            preserveScroll: true,
+        });
+    };
+
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-            <nav className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+            <Toaster richColors position="top-right" />
+            <nav className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 sticky top-0 z-50">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
@@ -32,20 +54,52 @@ export default function Authenticated({
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    href={route('sheet.view')}
+                                    active={route().current('sheet.view')}
+                                >
+                                    View Sheet
+                                </NavLink>
+                                <NavLink
+                                    href={route('email.content')}
+                                    active={route().current('email.content')}
+                                >
+                                    Email Template
+                                </NavLink>
+                                <NavLink
+                                    href={route('configuration')}
+                                    active={route().current('configuration')}
+                                >
+                                    Configuration
+                                </NavLink>
+                                {user?.role === 'admin' && (
+                                    <NavLink
+                                        href={route('admin.users.index')}
+                                        active={route().current('admin.users.index')}
+                                    >
+                                        Admin Panel
+                                    </NavLink>
+                                )}
                             </div>
                         </div>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            <div className="relative ms-3">
+                        <div className="hidden sm:ms-6 sm:flex sm:items-center space-x-4">
+                            {route().current('dashboard') && (
+                                <Button size="sm" onClick={processSheet} className="gap-2 bg-indigo-600 hover:bg-indigo-700 font-bold shadow-md text-white">
+                                    <Play className="h-4 w-4 fill-current" />
+                                    Run Processor
+                                </Button>
+                            )}
+
+                            <div className="relative ms-3 border-l pl-4 dark:border-zinc-800">
                                 <Dropdown>
                                     <Dropdown.Trigger>
                                         <span className="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
+                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-zinc-900 dark:text-gray-400 dark:hover:text-gray-300"
                                             >
                                                 {user.name}
-
                                                 <svg
                                                     className="-me-0.5 ms-2 h-4 w-4"
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -81,13 +135,19 @@ export default function Authenticated({
                         </div>
 
                         <div className="-me-2 flex items-center sm:hidden">
+                            {route().current('dashboard') && (
+                                <Button size="sm" onClick={processSheet} className="mr-2 gap-1 bg-indigo-600 hover:bg-indigo-700 font-bold shadow-md px-2 text-white">
+                                    <Play className="h-4 w-4 fill-current" />
+                                    Run
+                                </Button>
+                            )}
                             <button
                                 onClick={() =>
                                     setShowingNavigationDropdown(
                                         (previousState) => !previousState,
                                     )
                                 }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none dark:text-gray-500 dark:hover:bg-gray-900 dark:hover:text-gray-400 dark:focus:bg-gray-900 dark:focus:text-gray-400"
+                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none dark:text-gray-500 dark:hover:bg-zinc-800 dark:hover:text-gray-400 dark:focus:bg-zinc-800 dark:focus:text-gray-400"
                             >
                                 <svg
                                     className="h-6 w-6"
@@ -136,9 +196,35 @@ export default function Authenticated({
                         >
                             Dashboard
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('sheet.view')}
+                            active={route().current('sheet.view')}
+                        >
+                            View Sheet
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('email.content')}
+                            active={route().current('email.content')}
+                        >
+                            Email Template
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('configuration')}
+                            active={route().current('configuration')}
+                        >
+                            Configuration
+                        </ResponsiveNavLink>
+                        {user?.role === 'admin' && (
+                            <ResponsiveNavLink
+                                href={route('admin.users.index')}
+                                active={route().current('admin.users.index')}
+                            >
+                                Admin Panel
+                            </ResponsiveNavLink>
+                        )}
                     </div>
 
-                    <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">
+                    <div className="border-t border-gray-200 pb-1 pt-4 dark:border-zinc-800">
                         <div className="px-4">
                             <div className="text-base font-medium text-gray-800 dark:text-gray-200">
                                 {user.name}
@@ -165,8 +251,8 @@ export default function Authenticated({
             </nav>
 
             {header && (
-                <header className="bg-white border-b border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <header className="bg-white border-b border-zinc-200 shadow-sm dark:bg-zinc-900 dark:border-zinc-800 relative z-10">
+                    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
                         {header}
                     </div>
                 </header>

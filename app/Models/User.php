@@ -21,6 +21,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'daily_email_limit',
+        'emails_sent_today',
+        'is_onboarded',
     ];
 
     /**
@@ -43,6 +47,22 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_onboarded' => 'boolean',
         ];
+    }
+
+    public function mailSettings()
+    {
+        return $this->hasOne(MailSetting::class);
+    }
+
+    public function mailLogs()
+    {
+        return $this->hasMany(MailLog::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 }

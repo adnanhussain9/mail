@@ -13,27 +13,69 @@ use App\Mail\DynamicJobMail;
 use Revolution\Google\Sheets\Facades\Sheets;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Config;
 
 class MailLogController extends Controller
 {
+    private function setDynamicSmtpConfig(MailSetting $settings)
+    {
+        if ($settings->smtp_host) {
+            Config::set('mail.mailers.smtp.host', $settings->smtp_host);
+            Config::set('mail.mailers.smtp.port', $settings->smtp_port);
+            Config::set('mail.mailers.smtp.encryption', $settings->smtp_encryption);
+            Config::set('mail.mailers.smtp.username', $settings->smtp_username);
+            Config::set('mail.mailers.smtp.password', $settings->smtp_password);
+            
+            if ($settings->from_address) {
+                Config::set('mail.from.address', $settings->from_address);
+                Config::set('mail.from.name', $settings->from_name ?? auth()->user()->name);
+            }
+        }
+    }
+
     public function index(): Response
     {
-        $logs = MailLog::latest()->paginate(20)->through(fn($log) => [
+        $logs = MailLog::where('user_id', auth()->id())->latest()->paginate(20)->through(fn($log) => [
             'id' => $log->id,
             'email' => $log->email,
             'company_name' => $log->company_name,
             'position_name' => $log->position_name,
-            'sent_at' => $log->sent_at->diffForHumans(),
+            'sent_at' => $log->sent_at ? $log->sent_at->diffForHumans() : 'N/A',
         ]);
 
-        $settings = MailSetting::first() ?? new MailSetting([
+        $settings = MailSetting::where('user_id', auth()->id())->first() ?? new MailSetting([
             'subject' => 'Application for {position} at {company}',
-            'body' => "Hello!\n\nI am interested in applying for the {position} position at {company}.\n\nBest regards,\n" . config('app.name') . "\nWeb Developer",
+            'body' => "Hello!\n\nI am interested in applying for the {position} position at {company}.\n\nBest regards,\n" . auth()->user()->name,
         ]);
+        
         return Inertia::render('Dashboard', [
             'logs' => $logs,
-            'settings' => $settings,
             'status' => session('success'),
+            'user' => auth()->user()
+        ]);
+    }
+
+    public function settings(): \Inertia\Response
+    {
+        $settings = MailSetting::where('user_id', auth()->id())->first() ?? new MailSetting([
+            'subject' => 'Application for {position} at {company}',
+            'body' => "Hello!\n\nI am interested in applying for the {position} position at {company}.\n\nBest regards,\n" . auth()->user()->name,
+        ]);
+        
+        return Inertia::render('Configuration', [
+            'settings' => $settings,
+        ]);
+    }
+
+    public function emailContent(): \Inertia\Response
+    {
+        $settings = MailSetting::where('user_id', auth()->id())->first() ?? new MailSetting([
+            'subject' => 'Application for {position} at {company}',
+            'body' => "Hello!\n\nI am interested in applying for the {position} position at {company}.\n\nBest regards,\n" . auth()->user()->name,
+        ]);
+        
+        return Inertia::render('EmailContent', [
+            'settings' => $settings,
         ]);
     }
 
@@ -42,15 +84,32 @@ class MailLogController extends Controller
         $request->validate([
             'subject' => 'required|string|max:255',
             'body' => 'required|string',
-            'attachment' => 'nullable|file|mimes:pdf|max:5120', // Max 5MB PDF
+            'attachment' => 'nullable|file|mimes:pdf|max:5120',
+            'google_sheet_id' => 'nullable|string',
+            'smtp_host' => 'nullable|string',
+            'smtp_port' => 'nullable|string',
+            'smtp_username' => 'nullable|string',
+            'smtp_password' => 'nullable|string',
+            'smtp_encryption' => 'nullable|string',
+            'from_address' => 'nullable|email',
+            'from_name' => 'nullable|string',
         ]);
 
-        $settings = MailSetting::first() ?? new MailSetting();
-        $data = $request->only(['subject', 'body', 'search_keywords']);
+        $settings = MailSetting::firstOrNew(['user_id' => auth()->id()]);
+        
+        $data = $request->only([
+            'subject', 'body', 'search_keywords', 'google_sheet_id',
+            'smtp_host', 'smtp_port', 'smtp_username', 'smtp_encryption',
+            'from_address', 'from_name'
+        ]);
+        
         $data['is_auto_hunting'] = $request->has('is_auto_hunting');
 
+        if ($request->filled('smtp_password')) {
+            $data['smtp_password'] = $request->smtp_password;
+        }
+
         if ($request->hasFile('attachment')) {
-            // Delete old file if exists
             if ($settings->attachment_path && Storage::exists($settings->attachment_path)) {
                 Storage::delete($settings->attachment_path);
             }
@@ -66,27 +125,32 @@ class MailLogController extends Controller
 
     public function processSheet()
     {
-        $spreadsheetId = config('services.google.sheet_id');
-        $sheetName = config('services.google.sheet_name', 'Sheet1');
-
-        if (!$spreadsheetId) {
-            return back()->with('error', 'GOOGLE_SHEET_ID is not set in .env');
+        $settings = MailSetting::where('user_id', auth()->id())->first();
+        if (!$settings || !$settings->google_sheet_id) {
+            return back()->with('error', 'Google Sheet ID is not configured.');
         }
 
+        $user = auth()->user();
+
         try {
-            $rows = Sheets::spreadsheet($spreadsheetId)
-                ->sheet($sheetName)
+            $rows = Sheets::spreadsheet($settings->google_sheet_id)
+                ->sheet(config('services.google.sheet_name', 'Sheet1'))
                 ->get();
 
             if ($rows->isEmpty()) {
                 return back()->with('success', 'Sheet is empty.');
             }
 
-            // Assume first row is header: Email, Company, Position
             $rows->pull(0);
             $processedCount = 0;
 
+            $this->setDynamicSmtpConfig($settings);
+
             foreach ($rows as $row) {
+                if ($user->emails_sent_today >= $user->daily_email_limit) {
+                    return back()->with('error', 'Daily email limit reached.');
+                }
+
                 $company = isset($row[0]) ? trim($row[0]) : null;
                 $email = isset($row[1]) ? trim($row[1]) : null;
                 $position = isset($row[2]) ? trim($row[2]) : null;
@@ -96,8 +160,8 @@ class MailLogController extends Controller
                     continue;
                 }
 
-                // Check if already sent (database check)
                 $exists = MailLog::where([
+                    'user_id' => $user->id,
                     'email' => $email,
                     'company_name' => $company,
                     'position_name' => $position,
@@ -105,15 +169,17 @@ class MailLogController extends Controller
 
                 if (!$exists) {
                     try {
-                        Mail::to($email)->send(new DynamicJobMail($email, $company, $position));
+                        Mail::to($email)->send(new DynamicJobMail($email, $company, $position, $settings));
 
                         MailLog::create([
+                            'user_id' => $user->id,
                             'email' => $email,
                             'company_name' => $company,
                             'position_name' => $position,
                             'sent_at' => now(),
                         ]);
 
+                        $user->increment('emails_sent_today');
                         $processedCount++;
                     } catch (\Exception $e) {
                         // Log error but continue
@@ -136,16 +202,14 @@ class MailLogController extends Controller
             'link' => 'nullable|string',
         ]);
 
-        $spreadsheetId = config('services.google.sheet_id');
-        $sheetName = config('services.google.sheet_name', 'Sheet1');
-
-        if (!$spreadsheetId) {
-            return back()->with('error', 'GOOGLE_SHEET_ID is not set in .env');
+        $settings = MailSetting::where('user_id', auth()->id())->first();
+        if (!$settings || !$settings->google_sheet_id) {
+            return back()->with('error', 'Google Sheet ID is not configured.');
         }
 
         try {
-            Sheets::spreadsheet($spreadsheetId)
-                ->sheet($sheetName)
+            Sheets::spreadsheet($settings->google_sheet_id)
+                ->sheet(config('services.google.sheet_name', 'Sheet1'))
                 ->append([[$request->company, $request->email, $request->position, $request->link ?? 'N/A']]);
 
             return back()->with('success', 'Entry added to sheet successfully!');
@@ -154,28 +218,27 @@ class MailLogController extends Controller
         }
     }
 
-    public function viewSheet(): Response
+    public function viewSheet()
     {
-        $spreadsheetId = config('services.google.sheet_id');
-        $sheetName = config('services.google.sheet_name', 'Sheet1');
-
-        if (!$spreadsheetId) {
-            abort(500, 'GOOGLE_SHEET_ID is not set in .env');
+        $settings = MailSetting::where('user_id', auth()->id())->first();
+        if (!$settings || !$settings->google_sheet_id) {
+            return back()->with('error', 'Google Sheet ID is not configured.');
         }
 
         try {
-            $rows = Sheets::spreadsheet($spreadsheetId)
-                ->sheet($sheetName)
+            $rows = Sheets::spreadsheet($settings->google_sheet_id)
+                ->sheet(config('services.google.sheet_name', 'Sheet1'))
                 ->get();
 
             return Inertia::render('ViewSheet', [
                 'rows' => $rows,
-                'sheetName' => $sheetName,
+                'sheetName' => config('services.google.sheet_name', 'Sheet1'),
             ]);
         } catch (\Exception $e) {
-            abort(500, 'Error accessing Google Sheets: ' . $e->getMessage());
+            return back()->with('error', 'Error accessing Google Sheets: ' . $e->getMessage());
         }
     }
+
     public function generateEmailBody(Request $request)
     {
         $request->validate([
@@ -190,7 +253,7 @@ class MailLogController extends Controller
 
         try {
             $prompt = "You are a professional software developer assistant. Generate a highly personalized and professional application email body based on the following Job Description (JD). 
-            The email should be sent from " . config('app.name') . ".
+            The email should be sent from " . auth()->user()->name . ".
             Use the following placeholders in the email: {company} for the company name and {position} for the job title. 
             Ensure the tone is professional, confident, and enthusiastic. 
             Do not include any other text beside the email body itself.
@@ -210,10 +273,7 @@ class MailLogController extends Controller
             if ($response->successful()) {
                 $result = $response->json();
                 $generatedText = $result['candidates'][0]['content']['parts'][0]['text'] ?? '';
-
-                // Clean up any extra markdown or formatting if AI adds it
                 $generatedText = trim($generatedText);
-
                 return response()->json(['body' => $generatedText]);
             }
 
